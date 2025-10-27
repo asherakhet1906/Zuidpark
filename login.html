@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Inloggen – Belastingdienst Zuidpark (Demo)</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏔️%3C/text%3E%3C/svg%3E">
+<style>
+  /* === Neutrale, zakelijke stijl (geen cartoonlook) === */
+  :root{
+    --bg: #f6f7f9;               /* lichte achtergrond */
+    --surface: #ffffff;           /* kaart/kaartachtergrond */
+    --ink: #1b263b;               /* hoofdtekst */
+    --muted: #5c6a82;            /* subtiele tekst */
+    --line: #e3e8ef;             /* lijnen/borders */
+    --brand: #0a5bd3;            /* primaire merk-kleur */
+    --brand-ink: #ffffff;        /* tekst op primaire */
+    --brand-focus: #0d6efd;      /* focuskleur */
+    --ok: #198754;               /* succes */
+    --bad: #c1121f;              /* fout */
+    --shadow: 0 6px 16px rgba(11, 21, 38, 0.08);
+    --radius: 14px;
+    --radius-sm: 10px;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", sans-serif;
+    color:var(--ink);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  header, main, footer { max-width: 980px; margin: 0 auto; padding: 24px; }
+  header{ display:flex; justify-content:space-between; align-items:center }
+
+  .logo{ font-weight:800; letter-spacing:.2px; display:flex; align-items:center; gap:10px }
+  .chip{ font-size:12px; padding:4px 10px; border:1px solid var(--line); border-radius:999px; background:#f8fafc; color:var(--muted) }
+
+  .announcement{
+    background:#eef5ff;
+    color:#0a3b8a;
+    border:1px solid #d9e6ff;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display:flex; align-items:flex-start; gap:10px;
+  }
+  .announcement strong{ color:#082a63 }
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:22px;
+    box-shadow: var(--shadow);
+  }
+  .center{ max-width:720px }
+
+  h1{ margin:0 0 8px; font-size:28px }
+  h2{ margin:0 0 10px; font-size:22px }
+  p{ color:var(--muted); line-height:1.6; margin: 0 0 12px }
+
+  label{ display:block; font-weight:700; margin-top:12px }
+  input{
+    width:100%;
+    padding:12px 14px;
+    border-radius:var(--radius-sm);
+    border:1px solid var(--line);
+    background:var(--surface);
+    color:var(--ink);
+    margin-top:6px;
+    font-size:16px;
+  }
+  input::placeholder{ color:#9aa9bf }
+  input:focus-visible{
+    outline: 3px solid var(--brand-focus);
+    outline-offset: 2px;
+  }
+
+  .actions{ display:flex; gap:12px; flex-wrap:wrap; margin-top:16px }
+  .btn{
+    appearance:none;
+    border:0;
+    border-radius:var(--radius);
+    background:var(--brand);
+    color:var(--brand-ink);
+    font-weight:700;
+    padding:12px 18px;
+    cursor:pointer;
+    box-shadow: var(--shadow);
+    transition: transform .08s ease, box-shadow .12s ease, background .2s ease;
+    min-width:160px;
+    text-align:center;
+  }
+  .btn:hover{ filter: brightness(1.04); }
+  .btn:active{ transform: translateY(1px); }
+  .btn:focus-visible{ outline:3px solid var(--brand-focus); outline-offset:2px }
+
+  .status{ min-height:1lh; margin-top:8px; font-weight:700 }
+  .status.ok{ color:var(--ok) }
+  .status.bad{ color:var(--bad) }
+
+  footer{
+    text-align:center; color:#405069; font-size:13px;
+    margin-top:24px; padding-top:10px;
+  }
+
+  .hint{ font-size:13px; color:#3f4d63; }
+
+  /* Reduced motion: respecteer systeeminstelling */
+  @media (prefers-reduced-motion: reduce){
+    *{ scroll-behavior: auto !important; }
+    .btn{ transition: none; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="logo" aria-label="Belastingdienst – Zuidpark">
+      <span>🏔️ Belastingdienst – Zuidpark</span>
+      <span class="chip" aria-label="Demo omgeving">DEMO</span>
+    </div>
+  </header>
+
+  <main class="center">
+    <section class="announcement" role="note" aria-label="Demowaarschuwing">
+      <div aria-hidden="true">ℹ️</div>
+      <div>
+        <strong>Dit is een demo-omgeving.</strong> Er vindt geen echte authenticatie plaats. Gebruik uitsluitend de gebruikersnaam <b>Ketencontroller</b>; het wachtwoord wordt genegeerd.
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:16px">
+      <h1>Inloggen</h1>
+      <p class="hint">Voer hieronder je gegevens in. In deze demo moet de gebruikersnaam exact <b>Ketencontroller</b> zijn (hoofdlettergevoelig).</p>
+
+      <!-- HTML5-validatie ingeschakeld (géén novalidate) -->
+      <form id="loginForm" aria-describedby="loginHelp">
+        <label for="username">Gebruikersnaam</label>
+        <!-- pattern eist exacte match: ^Ketencontroller$ -->
+        <input id="username" name="username" autocomplete="username" placeholder="Ketencontroller" required pattern="^Ketencontroller$" title="Gebruik exact: Ketencontroller"/>
+
+        <label for="password">Wachtwoord (demo – niet verplicht)</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" placeholder="(optioneel)" />
+
+        <div id="loginHelp" class="hint" aria-live="polite">Druk op Enter of klik op Inloggen. Het wachtwoord wordt in deze demo genegeerd.</div>
+
+        <div class="actions">
+          <button id="btnLogin" type="submit" class="btn">Inloggen</button>
+        </div>
+
+        <div id="status" class="status" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    © 2025 Belastingdienst Zuidpark – Demo omgeving
+  </footer>
+
+  <script>
+  (function(){
+    "use strict";
+    const $ = (s)=>document.querySelector(s);
+    const status = $("#status");
+
+    function setStatus(msg, ok){
+      status.textContent = msg || "";
+      status.className = "status " + (ok ? "ok" : "bad");
+    }
+    function isAllowedUser(v){
+      return v === "Ketencontroller"; // hoofdlettergevoelig, exact match
+    }
+    function go(){ window.location.href = "index.html"; }
+
+    // Verbetering: duidelijke focus naar status na fout/succes (toegankelijkheid)
+    function announceAndFocus(ok){
+      // Wacht even zodat aria-live kan uitspreken
+      requestAnimationFrame(()=>{ status.tabIndex = -1; status.focus({preventScroll:true}); if(!ok){ status.scrollIntoView({behavior:"smooth", block:"nearest"}); }});
+    }
+
+    // Extra: custom validatie feedback voor username (naast HTML5 pattern)
+    const username = $("#username");
+    username?.addEventListener("input", ()=>{
+      if(username.validity.patternMismatch){
+        username.setCustomValidity("Gebruik exact: Ketencontroller");
+      } else {
+        username.setCustomValidity("");
+      }
+    });
+
+    $("#loginForm")?.addEventListener("submit", (e)=>{
+      e.preventDefault();
+      const uname = username?.value?.trim() || "";
+      // password wordt genegeerd in deze demo
+
+      // Laat eerst de native HTML5 validatie zijn werk doen
+      if(!$("#loginForm").checkValidity()){
+        $("#loginForm").reportValidity();
+        setStatus("Controleer je invoer: gebruikersnaam moet exact ‘Ketencontroller’ zijn.", false);
+        announceAndFocus(false);
+        return;
+      }
+
+      if (isAllowedUser(uname)) {
+        try {
+          localStorage.setItem("zpUser", "Ketencontroller");
+          setStatus("Inloggen geslaagd. Eén moment…", true);
+          announceAndFocus(true);
+          setTimeout(go, 250);
+        } catch(err) {
+          console.error(err);
+          setStatus("Inloggen geslaagd, maar je browser staat lokale opslag niet toe. Doorgaan…", true);
+          announceAndFocus(true);
+          setTimeout(go, 250);
+        }
+      } else {
+        setStatus("Onjuiste gebruikersnaam. Gebruik exact: Ketencontroller", false);
+        announceAndFocus(false);
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

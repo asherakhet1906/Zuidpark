@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Zuidpark – Dashboards (Demo)</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📊%3C/text%3E%3C/svg%3E">
+<style>
+  :root{ --bg:#f6f7f9; --surface:#ffffff; --ink:#1b263b; --muted:#5c6a82; --line:#e3e8ef; --brand:#0a5bd3; --brand-ink:#ffffff; --brand-focus:#0d6efd; --ok:#198754; --bad:#c1121f; --warn:#d99100; --shadow:0 6px 16px rgba(11,21,38,.08); --radius:14px; --radius-sm:10px }
+  *{ box-sizing:border-box }
+  html,body{ height:100% }
+  body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale }
+  header, main, footer{ max-width:1100px; margin:0 auto; padding:24px }
+  header{ display:flex; justify-content:space-between; align-items:start; gap:16px; flex-wrap:wrap }
+  .brand{ font-weight:800; letter-spacing:.2px; display:flex; align-items:center; gap:10px }
+  .chip{ font-size:12px; padding:4px 10px; border:1px solid var(--line); border-radius:999px; background:#f8fafc; color:var(--muted) }
+  nav{ display:flex; gap:10px; flex-wrap:wrap }
+  .btn{ appearance:none; border:0; border-radius:var(--radius); background:var(--brand); color:var(--brand-ink); font-weight:700; padding:10px 14px; cursor:pointer; box-shadow:var(--shadow); min-width:140px; text-align:center }
+  .btn:hover{ filter:brightness(1.04) }
+  .btn:active{ transform:translateY(1px) }
+  .btn:focus-visible{ outline:3px solid var(--brand-focus); outline-offset:2px }
+  .btn.outline{ background:var(--surface); color:var(--ink); border:1px solid var(--line) }
+  .container{ max-width:1100px; margin:0 auto; padding: 0 24px 24px }
+  .grid{ display:grid; grid-template-columns: 1fr; gap:16px }
+  @media (min-width: 900px){ .grid-4{ grid-template-columns: repeat(4, 1fr) } .grid-2{ grid-template-columns: repeat(2, 1fr) } }
+  .card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow) }
+  h1{ margin:0 0 8px; font-size:28px }
+  h2{ margin:0 0 10px; font-size:22px }
+  h3{ margin:0 0 6px; font-size:16px }
+  p{ color:var(--muted); line-height:1.6 }
+  .kpi{ display:flex; flex-direction:column; gap:6px }
+  .kpi-row{ display:flex; gap:10px; align-items:center; justify-content:space-between }
+  .kpi-value{ font-size:28px; font-weight:800 }
+  .kpi-value.good{ color: var(--ok) } .kpi-value.warn{ color: var(--warn) } .kpi-value.bad{ color: var(--bad) }
+  .kpi .target{ font-size:12px; padding:2px 8px; border-radius:999px; border:1px solid var(--line); background:#f8fafc; color:#3f4d63 }
+  .muted{ color:var(--muted) }
+  .banner{ background:#eef5ff; color:#0a3b8a; border:1px solid #d9e6ff; border-radius:var(--radius); padding: 14px 16px; display:flex; align-items:flex-start; gap:10px }
+  .banner strong{ color:#082a63 }
+  ul.bullets{ margin:0; padding-left: 18px; color:var(--muted) }
+  .tabs{ display:flex; gap:8px; flex-wrap:wrap; margin: 6px 0 12px }
+  .filters{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin: 4px 0 8px }
+  .filters .label{ color: var(--muted); font-size:14px; margin-right:4px }
+  .filter-btn{ appearance:none; border:1px solid var(--line); background:#fff; color:var(--ink); padding:6px 10px; border-radius:999px; cursor:pointer }
+  .filter-btn[aria-pressed="true"]{ background:var(--brand); color:#fff; border-color:transparent }
+  .filters input[type="month"]{ border:1px solid var(--line); border-radius:10px; padding:6px 8px; background:#fff; color:var(--ink) }
+  .filters .label{ color: var(--muted); font-size:14px; margin-right:4px }
+  .filter-btn{ appearance:none; border:1px solid var(--line); background:#fff; color:var(--ink); padding:6px 10px; border-radius:999px; cursor:pointer }
+  .filter-btn[aria-pressed="true"]{ background:var(--brand); color:#fff; border-color:transparent }
+  .tab{ appearance:none; border:1px solid var(--line); background:#fff; color:var(--ink); padding:8px 12px; border-radius:999px; cursor:pointer }
+  .tab[aria-selected="true"]{ background:var(--brand); color:#fff; border-color:transparent }
+  .legend{display:flex; align-items:center; gap:16px; flex-wrap:wrap; color:var(--muted); font-size:14px; margin-top:8px}
+  .legend .item{display:flex; align-items:center; gap:8px}
+  .legend .swatch{width:32px; height:0; border-top:3px solid #0a5bd3;}
+  .legend .swatch.target-high{border-top:3px dashed #198754}
+  .legend .swatch.target-low{border-top:3px dashed #d99100}
+  .legend.mini{font-size:12px; gap:12px; margin-top:6px}
+  .legend.mini .swatch{width:24px; border-top-width:2px}
+  .tooltip{position:fixed; pointer-events:none; background:#111827; color:#fff; padding:6px 8px; border-radius:8px; font-size:12px; box-shadow:0 6px 16px rgba(0,0,0,.2); opacity:.95; z-index:9999}
+  footer{ text-align:center; color:#405069; font-size:13px }
+  @media (prefers-reduced-motion: reduce){ .btn{ transition:none } }
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand" aria-label="Belastingdienst – Zuidpark">
+      <span>🏔️ Belastingdienst – Zuidpark</span>
+      <span class="chip">DEMO</span>
+    </div>
+    <nav aria-label="Hoofdnavigatie">
+      <a class="btn outline" href="./index.html">Start</a>
+      <a class="btn outline" href="./return.html">Aangifte</a>
+      <a class="btn outline" href="./vacatures.html">Vacatures</a>
+      <a id="navLogin" class="btn" href="./login.html">Inloggen</a>
+      <button id="navLogout" class="btn outline" type="button" hidden>Uitloggen</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section id="demoBanner" class="banner" role="note" aria-label="Demowaarschuwing" hidden>
+      <div aria-hidden="true">ℹ️</div>
+      <div><strong>Demo-omgeving.</strong> Je bent niet echt ingelogd; authenticatie gebeurt client-side.</div>
+    </section>
+
+    <!-- Filters -->
+    <div class="filters" role="toolbar" aria-label="Periode filter">
+      <span class="label">Periode:</span>
+      <button class="filter-btn" data-period="3" aria-pressed="false">3 mnd</button>
+      <button class="filter-btn" data-period="6" aria-pressed="false">6 mnd</button>
+      <button class="filter-btn" data-period="12" aria-pressed="true">12 mnd</button>
+      <span class="label" style="margin-left:12px">Bereik:</span>
+      <input type="month" id="startMonth" aria-label="Start maand" />
+      <span>–</span>
+      <input type="month" id="endMonth" aria-label="Eind maand" />
+      <button class="filter-btn" id="applyRange" aria-pressed="false">Toepassen</button>
+      <button class="filter-btn" id="resetRange" aria-pressed="false">Reset</button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="strategic" aria-selected="true" aria-controls="view-strategic" id="tab-strategic">Strategische doelstellingen</button>
+      <button class="tab" role="tab" data-tab="operational" aria-selected="false" aria-controls="view-operational" id="tab-operational">Operationele/Tactische doelstellingen</button>
+      <button class="tab" role="tab" data-tab="product" aria-selected="false" aria-controls="view-product" id="tab-product">Product‑flow doelstellingen</button>
+    </div>
+
+    <!-- View: Strategisch -->
+    <section id="view-strategic" role="tabpanel" aria-labelledby="tab-strategic">
+      <div class="grid grid-4" style="margin-top:8px">
+        <div class="card kpi">
+          <div class="kpi-row"><h3>STP%</h3><span class="muted">Straight‑Through Processing</span><span class="target" id="targetSTP"></span></div>
+          <div class="kpi-value" id="kpiSTP">—</div>
+          <canvas id="sparkSTP" width="220" height="60" aria-label="Trend STP%" role="img"></canvas>
+          <div class="legend mini" aria-label="Legenda STP"><div class="item"><span class="swatch" aria-hidden="true"></span><span>Trend</span></div><div class="item"><span class="swatch target-high" aria-hidden="true"></span><span>Doel (≥)</span></div></div>
+        </div>
+        <div class="card kpi">
+          <div class="kpi-row"><h3>FTR%</h3><span class="muted">First‑Time‑Right</span><span class="target" id="targetFTR"></span></div>
+          <div class="kpi-value" id="kpiFTR">—</div>
+          <canvas id="sparkFTR" width="220" height="60" aria-label="Trend FTR%" role="img"></canvas>
+          <div class="legend mini" aria-label="Legenda FTR"><div class="item"><span class="swatch" aria-hidden="true"></span><span>Trend</span></div><div class="item"><span class="swatch target-high" aria-hidden="true"></span><span>Doel (≥)</span></div></div>
+        </div>
+        <div class="card kpi">
+          <div class="kpi-row"><h3>Mediane doorlooptijd</h3><span class="muted">Dagen</span><span class="target" id="targetLead"></span></div>
+          <div class="kpi-value" id="kpiLead">—</div>
+          <canvas id="sparkLead" width="220" height="60" aria-label="Trend doorlooptijd" role="img"></canvas>
+          <div class="legend mini" aria-label="Legenda Doorlooptijd"><div class="item"><span class="swatch" aria-hidden="true"></span><span>Trend</span></div><div class="item"><span class="swatch target-low" aria-hidden="true"></span><span>Doel (≤)</span></div></div>
+        </div>
+        <div class="card kpi">
+          <div class="kpi-row"><h3>Automatiseringsgraad</h3><span class="muted">Prefill & rules</span><span class="target" id="targetAuto"></span></div>
+          <div class="kpi-value" id="kpiAuto">—</div>
+          <canvas id="sparkAuto" width="220" height="60" aria-label="Trend automatisering" role="img"></canvas>
+          <div class="legend mini" aria-label="Legenda Automatisering"><div class="item"><span class="swatch" aria-hidden="true"></span><span>Trend</span></div><div class="item"><span class="swatch target-high" aria-hidden="true"></span><span>Doel (≥)</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- View: Operationeel/Tactisch -->
+    <section id="view-operational" role="tabpanel" aria-labelledby="tab-operational" hidden>
+      <div class="grid grid-4" style="margin-top:8px">
+        <div class="card kpi">
+          <div class="kpi-row"><h3>P95 doorlooptijd</h3><span class="muted">Dagen</span><span class="target" id="targetP95"></span></div>
+          <div class="kpi-value" id="kpiP95">—</div>
+          <canvas id="sparkP95" width="220" height="60" aria-label="Trend P95 doorlooptijd" role="img"></canvas>
+          <div class="legend mini"><div class="item"><span class="swatch"></span><span>Trend</span></div><div class="item"><span class="swatch target-low"></span><span>Doel (≤)</span></div></div>
+        </div>
+        <div class="card kpi">
+          <div class="kpi-row"><h3>Validatiefouten</h3><span class="muted">per aangifte</span><span class="target" id="targetErr"></span></div>
+          <div class="kpi-value" id="kpiErr">—</div>
+          <canvas id="sparkErr" width="220" height="60" aria-label="Trend validatiefouten per aangifte" role="img"></canvas>
+          <div class="legend mini"><div class="item"><span class="swatch"></span><span>Trend</span></div><div class="item"><span class="swatch target-low"></span><span>Doel (≤)</span></div></div>
+        </div>
+        <div class="card kpi">
+          <div class="kpi-row"><h3>SLA‑naleving</h3><span class="muted">% binnen termijn</span><span class="target" id="targetSLA"></span></div>
+          <div class="kpi-value" id="kpiSLA">—</div>
+          <canvas id="sparkSLA" width="220" height="60" aria-label="Trend SLA-naleving" role="img"></canvas>
+          <div class="legend mini"><div class="item"><span class="swatch"></span><span>Trend</span></div><div class="item"><span class="swatch target-high"></span><span>Doel (≥)</span></div></div>
+        </div>
+        <div class="card kpi">
+          <div class="kpi-row"><h3>Herstelcycli</h3><span class="muted">Gemiddeld</span><span class="target" id="targetLoops"></span></div>
+          <div class="kpi-value" id="kpiLoops">—</div>
+          <canvas id="sparkLoops" width="220" height="60" aria-label="Trend herstelcycli" role="img"></canvas>
+          <div class="legend mini"><div class="item"><span class="swatch"></span><span>Trend</span></div><div class="item"><span class="swatch target-low"></span><span>Doel (≤)</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- View: Product‑flow -->
+    <section id="view-product" role="tabpanel" aria-labelledby="tab-product" hidden>
+      <div class="grid grid-4" style="margin-top:8px">
+        <div class="card kpi">
+          <div class="kpi-row"><h3>Drop‑off</h3><span class="muted">% afhakers</span><span class="target" id="targetDrop"></span></div>
+          <div class="kpi-value" id="kpiDrop">—</div>
+          <canvas id="sparkDrop" width="220" height="60" aria-label="Trend drop-off" role="img"></canvas>
+          <div class="legend mini"><div class="item"><span class="swatch"></span><span>Trend</span></div><div class="item"><span class="swatch target-low"></span><span>Doel (≤)</span></div></div>
+        </div>
+        <div class="card kpi">
+          <div class="kpi-row"><h3>Validatiefouten</h3><span class="muted">% van aangiften</span><span class="target" id="targetErrPct"></span></div>
+          <div class="kpi-value" id="kpiErrPct">—</div>
+          <canvas id="sparkErrPct" width="220" height="60" aria-label="Trend fouten%" role="img"></canvas>
+          <div class="legend mini"><div class="item"><span class="swatch"></span><span>Trend</span></div><div class="item"><span class="swatch target-low"></span><span>Doel (≤)</span></div></div>
+        </div>
+        <div class="card kpi">
+          <div class="kpi-row"><h3>Prefill</h3><span class="muted">% auto‑ingevuld</span><span class="target" id="targetPrefill"></span></div>
+          <div class="kpi-value" id="kpiPrefill">—</div>
+          <canvas id="sparkPrefill" width="220" height="60" aria-label="Trend prefill" role="img"></canvas>
+          <div class="legend mini"><div class="item"><span class="swatch"></span><span>Trend</span></div><div class="item"><span class="swatch target-high"></span><span>Doel (≥)</span></div></div>
+        </div>
+        <div class="card kpi">
+          <div class="kpi-row"><h3>Uitlegbaarheid</h3><span class="muted">Tooltipgebruik %</span><span class="target" id="targetExplain"></span></div>
+          <div class="kpi-value" id="kpiExplain">—</div>
+          <canvas id="sparkExplain" width="220" height="60" aria-label="Trend uitleggebruik" role="img"></canvas>
+          <div class="legend mini"><div class="item"><span class="swatch"></span><span>Trend</span></div><div class="item"><span class="swatch target-high"></span><span>Doel (≥)</span></div></div>
+        </div>
+      </div>
+
+      <section class="card" style="margin-top:16px">
+        <h2>Product‑flow KPI → roll‑up</h2>
+        <ul class="bullets">
+          <li>Gebruiksgemak (drop‑off%) → beïnvloedt STP & doorlooptijd</li>
+          <li>Datakwaliteit (validatiefouten/aangifte) → beïnvloedt FTR & STP</li>
+          <li>Compleetheid (auto‑prefill%) → beïnvloedt automatiseringsgraad</li>
+          <li>Uitlegbaarheid (tooltips gebruikt) → beïnvloedt FTR</li>
+        </ul>
+      </section>
+    </section>
+  </main>
+
+  <footer>© 2025 Belastingdienst Zuidpark – Demo omgeving</footer>
+
+  <script>
+  (function(){
+    "use strict";
+    const $ = (s)=>document.querySelector(s);
+    const $$ = (s)=>Array.from(document.querySelectorAll(s));
+
+    // ===== Auth guard =====
+    const loginBtn = $("#navLogin");
+    const logoutBtn = $("#navLogout");
+    const banner = $("#demoBanner");
+    function getUser(){ try { return localStorage.getItem('zpUser') || ""; } catch(_) { return ""; } }
+    function refreshAuth(){ const u=getUser(); const loggedIn=!!u; if(loginBtn) loginBtn.hidden=loggedIn; if(logoutBtn) logoutBtn.hidden=!loggedIn; if(banner) banner.hidden=loggedIn; }
+    function requireAuth(){ if(!getUser()){ window.location.replace('./login.html'); } }
+    logoutBtn?.addEventListener('click', ()=>{ try{ localStorage.removeItem('zpUser'); }catch(_){} window.location.href='./login.html'; });
+
+    // ===== Utils: months & labels =====
+    function pad(n){ return String(n).padStart(2,'0'); }
+    function buildMonthKeys(n=12){
+      // returns an array like ['2024-11','2024-12', ... '2025-10'] (chronological)
+      const now = new Date();
+      const arr = [];
+      for(let i=n-1;i>=0;i--){
+        const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+        arr.push(`${d.getFullYear()}-${pad(d.getMonth()+1)}`);
+      }
+      return arr;
+    }
+    let monthKeys = buildMonthKeys(12);
+
+    function labelsForPreset(period){
+      return monthKeys.slice(-period);
+    }
+    function labelsForRange(startYYYYMM, endYYYYMM){
+      const sIdx = monthKeys.indexOf(startYYYYMM);
+      const eIdx = monthKeys.indexOf(endYYYYMM);
+      if(sIdx === -1 || eIdx === -1 || sIdx > eIdx){ return null; }
+      return monthKeys.slice(sIdx, eIdx+1);
+    }
+    function sliceByLabels(seriesArr, labels){
+      const start = monthKeys.indexOf(labels[0]);
+      const end   = monthKeys.indexOf(labels[labels.length-1]);
+      return seriesArr.slice(start, end+1);
+    }
+
+    // ===== Spark with target + tooltips =====
+    function drawSparkGoal(id, points, {target=null, lowerBetter=false, labels=null}={}){
+      const c = document.getElementById(id); if(!c) return; const ctx = c.getContext('2d'); const w=c.width, h=c.height; ctx.clearRect(0,0,w,h);
+      const pad=6; const min=Math.min(...points); const max=Math.max(...points); const range = (max-min)||1; const xstep=(w-2*pad)/((points.length-1)||1);
+      const y = (v)=> h-pad - ((v-min)/range)*(h-2*pad);
+      ctx.lineWidth=2; ctx.beginPath(); points.forEach((v,i)=>{ const x=pad+i*xstep, yy=y(v); i?ctx.lineTo(x,yy):ctx.moveTo(x,yy); }); ctx.strokeStyle='#0a5bd3'; ctx.stroke();
+      const grad = ctx.createLinearGradient(0,0,0,h); grad.addColorStop(0,'rgba(10,91,211,0.18)'); grad.addColorStop(1,'rgba(10,91,211,0)');
+      ctx.lineTo(w-pad,h-pad); ctx.lineTo(pad,h-pad); ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+      if(target!=null){ const ty = y(target); ctx.save(); ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(pad, ty); ctx.lineTo(w-pad, ty); ctx.strokeStyle = lowerBetter ? '#d99100' : '#198754'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore(); }
+      attachTooltip(c, points, {target, lowerBetter, pad, xstep, labels});
+    }
+    function attachTooltip(canvas, points, {target=null, lowerBetter=false, pad, xstep, labels=null}){
+      let tip = document.querySelector(`.tooltip[data-for="${canvas.id}"]`);
+      if(!tip){ tip = document.createElement('div'); tip.className='tooltip'; tip.dataset.for = canvas.id; document.body.appendChild(tip); }
+      const fmt = (v, id)=> id.includes('Lead')||id.includes('P95')||id.includes('Loops')? `${v} d` : `${v}%`;
+      const fmtLabel = (idx)=>{ if(!labels){ return `Maand ${idx+1}`; } const key = labels[idx]; const d = new Date(key+'-01'); const f = new Intl.DateTimeFormat('nl-NL',{ month:'short', year:'numeric' }); return f.format(d); };
+      function show(e){ const rect = canvas.getBoundingClientRect(); const mx = e.clientX - rect.left; const idx = Math.max(0, Math.min(points.length-1, Math.round((mx-pad)/xstep))); const val = points[idx]; const above = target==null ? null : (lowerBetter ? val<=target : val>=target); tip.innerHTML = `${fmtLabel(idx)}<br><strong>${fmt(val, canvas.id)}</strong>${target!=null?`<br>Doel: ${fmt(target, canvas.id)} ${above? '✅':'⚠️'}`:''}`; tip.style.left = (e.clientX + 12) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; tip.style.display = 'block'; }
+      function hide(){ tip.style.display='none'; }
+      canvas.addEventListener('mousemove', show); canvas.addEventListener('mouseleave', hide);
+    }
+
+    // ===== Targets & Data =====
+    const targets = { stp:85, ftr:90, lead:10, auto:70, p95:20, err:1.2, sla:95, loops:1.4, drop:8, errPct:5, prefill:75, explain:30 };
+    const data = {
+      strategic: { stp:[62,64,66,65,68,71,73,74,76,77,78,80], ftr:[70,69,71,72,73,74,76,77,78,79,80,82], lead:[14,13,13,12,12,11,11,10,10,9,9,9], auto:[40,42,45,47,49,52,54,55,57,59,60,62] },
+      operational: { p95:[31,30,29,27,26,24,23,22,21,20,20,19], err:[1.9,1.8,1.7,1.7,1.6,1.5,1.4,1.4,1.3,1.3,1.2,1.2], sla:[82,84,85,86,88,90,91,92,93,94,95,96], loops:[2.3,2.2,2.1,2.0,1.9,1.8,1.7,1.7,1.6,1.6,1.5,1.4] },
+      product: { drop:[14,13,12,12,11,10,10,9,9,8,8,7], errPct:[9,8.5,8,7.5,7,6.5,6,6,5.5,5.2,5,4.8], prefill:[48,50,52,54,56,58,60,63,66,69,72,75], explain:[12,13,14,15,17,18,20,22,23,25,27,30] }
+    };
+
+    // ===== Helpers for coloring =====
+    function formatPct(v){ return `${v}%`; }
+    function colorHigherBetter($el, v, t){ $el.className='kpi-value'; $el.classList.add(v>=t? 'good' : (v>=t*0.9 ? 'warn' : 'bad')); }
+    function colorLowerBetter($el, v, t){ $el.className='kpi-value'; $el.classList.add(v<=t? 'good' : (v<=t*1.1 ? 'warn' : 'bad')); }
+
+    // ===== Renderers =====
+    function renderStrategic(labels){
+      const stp = sliceByLabels(data.strategic.stp, labels);
+      const ftr = sliceByLabels(data.strategic.ftr, labels);
+      const lead= sliceByLabels(data.strategic.lead, labels);
+      const auto= sliceByLabels(data.strategic.auto, labels);
+      const vSTP=stp.at(-1), vFTR=ftr.at(-1), vLead=lead.at(-1), vAuto=auto.at(-1);
+      $('#kpiSTP').textContent=formatPct(vSTP); $('#kpiFTR').textContent=formatPct(vFTR); $('#kpiLead').textContent=vLead; $('#kpiAuto').textContent=formatPct(vAuto);
+      colorHigherBetter($('#kpiSTP'), vSTP, targets.stp);
+      colorHigherBetter($('#kpiFTR'), vFTR, targets.ftr);
+      colorLowerBetter($('#kpiLead'), vLead, targets.lead);
+      colorHigherBetter($('#kpiAuto'), vAuto, targets.auto);
+      $('#targetSTP').textContent=`Doel: ${targets.stp}%`;
+      $('#targetFTR').textContent=`Doel: ${targets.ftr}%`;
+      $('#targetLead').textContent=`Doel: ≤ ${targets.lead} d`;
+      $('#targetAuto').textContent=`Doel: ${targets.auto}%`;
+      drawSparkGoal('sparkSTP', stp, {target:targets.stp, labels});
+      drawSparkGoal('sparkFTR', ftr, {target:targets.ftr, labels});
+      drawSparkGoal('sparkLead', lead, {target:targets.lead, lowerBetter:true, labels});
+      drawSparkGoal('sparkAuto', auto, {target:targets.auto, labels});
+    }
+    function renderOperational(labels){
+      const p95 = sliceByLabels(data.operational.p95, labels);
+      const err = sliceByLabels(data.operational.err, labels);
+      const sla = sliceByLabels(data.operational.sla, labels);
+      const loops = sliceByLabels(data.operational.loops, labels);
+      const vP95=p95.at(-1), vErr=err.at(-1), vSLA=sla.at(-1), vLoops=loops.at(-1);
+      $('#kpiP95').textContent = vP95; $('#kpiErr').textContent = vErr; $('#kpiSLA').textContent = formatPct(vSLA); $('#kpiLoops').textContent = vLoops;
+      colorLowerBetter($('#kpiP95'), vP95, targets.p95);
+      colorLowerBetter($('#kpiErr'), vErr, targets.err);
+      colorHigherBetter($('#kpiSLA'), vSLA, targets.sla);
+      colorLowerBetter($('#kpiLoops'), vLoops, targets.loops);
+      $('#targetP95').textContent=`Doel: ≤ ${targets.p95} d`;
+      $('#targetErr').textContent=`Doel: ≤ ${targets.err}`;
+      $('#targetSLA').textContent=`Doel: ${targets.sla}%`;
+      $('#targetLoops').textContent=`Doel: ≤ ${targets.loops}`;
+      drawSparkGoal('sparkP95', p95, {target:targets.p95, lowerBetter:true, labels});
+      drawSparkGoal('sparkErr', err, {target:targets.err, lowerBetter:true, labels});
+      drawSparkGoal('sparkSLA', sla, {target:targets.sla, labels});
+      drawSparkGoal('sparkLoops', loops, {target:targets.loops, lowerBetter:true, labels});
+    }
+    function renderProduct(labels){
+      const drop = sliceByLabels(data.product.drop, labels);
+      const errPct = sliceByLabels(data.product.errPct, labels);
+      const prefill = sliceByLabels(data.product.prefill, labels);
+      const explain = sliceByLabels(data.product.explain, labels);
+      const vDrop=drop.at(-1), vErrPct=errPct.at(-1), vPrefill=prefill.at(-1), vExplain=explain.at(-1);
+      $('#kpiDrop').textContent = formatPct(vDrop); $('#kpiErrPct').textContent = formatPct(vErrPct); $('#kpiPrefill').textContent = formatPct(vPrefill); $('#kpiExplain').textContent = formatPct(vExplain);
+      colorLowerBetter($('#kpiDrop'), vDrop, targets.drop);
+      colorLowerBetter($('#kpiErrPct'), vErrPct, targets.errPct);
+      colorHigherBetter($('#kpiPrefill'), vPrefill, targets.prefill);
+      colorHigherBetter($('#kpiExplain'), vExplain, targets.explain);
+      $('#targetDrop').textContent=`Doel: ≤ ${targets.drop}%`;
+      $('#targetErrPct').textContent=`Doel: ≤ ${targets.errPct}%`;
+      $('#targetPrefill').textContent=`Doel: ${targets.prefill}%`;
+      $('#targetExplain').textContent=`Doel: ${targets.explain}%`;
+      drawSparkGoal('sparkDrop', drop, {target:targets.drop, lowerBetter:true, labels});
+      drawSparkGoal('sparkErrPct', errPct, {target:targets.errPct, lowerBetter:true, labels});
+      drawSparkGoal('sparkPrefill', prefill, {target:targets.prefill, labels});
+      drawSparkGoal('sparkExplain', explain, {target:targets.explain, labels});
+    }
+
+    // ===== Tabs, period & range state =====
+    let currentTab = 'strategic';
+    let periodMode = 'preset'; // 'preset' | 'custom'
+    let currentPeriod = 12;    // only used when preset
+
+    function activeLabels(){
+      if(periodMode==='preset') return labelsForPreset(currentPeriod);
+      const s = $('#startMonth').value; const e = $('#endMonth').value; const lbls = labelsForRange(s,e); return lbls || labelsForPreset(currentPeriod);
+    }
+
+    function setTab(key){
+      currentTab = key;
+      const keys=['strategic','operational','product'];
+      keys.forEach(k=>{ const on = (k===key); $('#view-'+k).hidden = !on; $('#tab-'+k).setAttribute('aria-selected', on?'true':'false'); });
+      try{ localStorage.setItem('zpDashTab', key); }catch(_){ }
+      rerender();
+    }
+    function setPeriod(n){ periodMode='preset'; currentPeriod = n; $$('.filter-btn[data-period]').forEach(b=> b.setAttribute('aria-pressed', String(b.dataset.period==n))); try{ localStorage.setItem('zpDashPeriod', String(n)); localStorage.removeItem('zpDashStartMonth'); localStorage.removeItem('zpDashEndMonth'); }catch(_){ } rerender(); }
+    function applyRange(){
+      const s = $('#startMonth').value; const e = $('#endMonth').value; const lbls = labelsForRange(s,e);
+      if(!s||!e){ alert('Kies zowel een start- als eindmaand.'); return; }
+      if(!lbls){ alert('Bereik buiten beschikbare periode of onjuist (start > eind).'); return; }
+      periodMode='custom';
+      try{ localStorage.setItem('zpDashStartMonth', s); localStorage.setItem('zpDashEndMonth', e); }catch(_){ }
+      $$('.filter-btn[data-period]').forEach(b=> b.setAttribute('aria-pressed','false'));
+      rerender();
+    }
+    function resetRange(){
+      periodMode='preset';
+      try{ localStorage.removeItem('zpDashStartMonth'); localStorage.removeItem('zpDashEndMonth'); }catch(_){ }
+      // reset inputs to full range
+      $('#startMonth').value = monthKeys[0];
+      $('#endMonth').value   = monthKeys.at(-1);
+      setPeriod(currentPeriod||12);
+    }
+
+    function rerender(){
+      const labels = activeLabels();
+      if(currentTab==='strategic') renderStrategic(labels);
+      else if(currentTab==='operational') renderOperational(labels);
+      else renderProduct(labels);
+    }
+
+    // ===== Wire up UI =====
+    $$('.tab').forEach(b=> b.addEventListener('click', ()=> setTab(b.dataset.tab)));
+    $$('.filter-btn[data-period]').forEach(b=> b.addEventListener('click', ()=> setPeriod(parseInt(b.dataset.period,10))));
+    $('#applyRange')?.addEventListener('click', applyRange);
+    $('#resetRange')?.addEventListener('click', resetRange);
+
+    // ===== Init =====
+    refreshAuth(); requireAuth();
+
+    // Init month inputs range and values
+    $('#startMonth').setAttribute('min', monthKeys[0]);
+    $('#endMonth').setAttribute('min', monthKeys[0]);
+    $('#startMonth').setAttribute('max', monthKeys.at(-1));
+    $('#endMonth').setAttribute('max', monthKeys.at(-1));
+    const savedStart = localStorage.getItem('zpDashStartMonth');
+    const savedEnd   = localStorage.getItem('zpDashEndMonth');
+    $('#startMonth').value = savedStart || monthKeys[0];
+    $('#endMonth').value   = savedEnd   || monthKeys.at(-1);
+
+    const startTab = localStorage.getItem('zpDashTab') || 'strategic';
+    const startPeriod = parseInt(localStorage.getItem('zpDashPeriod')||'12',10);
+    setTab(startTab);
+    if(savedStart && savedEnd){ periodMode='custom'; $$('.filter-btn[data-period]').forEach(b=> b.setAttribute('aria-pressed','false')); rerender(); }
+    else { setPeriod([3,6,12].includes(startPeriod)? startPeriod : 12); }
+  })();
+  </script>
+</body>
+</html>

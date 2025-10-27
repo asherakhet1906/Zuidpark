@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Zuidpark – Start (Demo)</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏔️%3C/text%3E%3C/svg%3E">
+<style>
+  /* Zelfde zakelijke stijl en tokens als login.html */
+  :root{
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --ink: #1b263b;
+    --muted: #5c6a82;
+    --line: #e3e8ef;
+    --brand: #0a5bd3;
+    --brand-ink: #ffffff;
+    --brand-focus: #0d6efd;
+    --ok: #198754;
+    --bad: #c1121f;
+    --shadow: 0 6px 16px rgba(11, 21, 38, 0.08);
+    --radius: 14px;
+    --radius-sm: 10px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale }
+
+  header, main, footer{ max-width: 1100px; margin: 0 auto; padding: 24px }
+  header{ display:flex; justify-content:space-between; align-items:start; gap:16px; flex-wrap:wrap }
+  .brand{ font-weight:800; letter-spacing:.2px; display:flex; align-items:center; gap:10px }
+  .chip{ font-size:12px; padding:4px 10px; border:1px solid var(--line); border-radius:999px; background:#f8fafc; color:var(--muted) }
+
+  nav{ display:flex; gap:10px; flex-wrap:wrap }
+
+  .btn{ appearance:none; border:0; border-radius:var(--radius); background:var(--brand); color:var(--brand-ink); font-weight:700; padding:10px 14px; cursor:pointer; box-shadow:var(--shadow); min-width:140px; text-align:center; }
+  .btn:hover{ filter:brightness(1.04) }
+  .btn:active{ transform:translateY(1px) }
+  .btn:focus-visible{ outline:3px solid var(--brand-focus); outline-offset:2px }
+  .btn.outline{ background:var(--surface); color:var(--ink); border:1px solid var(--line) }
+
+  .container{ max-width:1100px; margin:0 auto; padding: 0 24px 24px }
+  .grid{ display:grid; grid-template-columns: 1fr; gap:16px }
+  @media (min-width: 900px){ .grid{ grid-template-columns: 1fr 1fr } }
+
+  .card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow) }
+  h1{ margin:0 0 8px; font-size:28px }
+  h2{ margin:0 0 10px; font-size:22px }
+  h3{ margin:8px 0; font-size:18px }
+  p{ color:var(--muted); line-height:1.6; margin: 0 0 12px }
+
+  .muted{ color:var(--muted) }
+  .row{ display:flex; gap:10px; flex-wrap:wrap }
+
+  .status{ min-height:1lh; margin-top:8px; font-weight:700 }
+  .status.ok{ color:var(--ok) }
+  .status.bad{ color:var(--bad) }
+
+  .kv{ display:grid; grid-template-columns: 220px 1fr; gap:8px 12px; padding:12px; border:1px solid var(--line); border-radius:var(--radius-sm); background:#fcfdff }
+  .kv > div:nth-child(odd){ color:#3b4a63 }
+
+  .banner{ background:#eef5ff; color:#0a3b8a; border:1px solid #d9e6ff; border-radius:var(--radius); padding: 14px 16px; display:flex; align-items:flex-start; gap:10px; }
+  .banner strong{ color:#082a63 }
+
+  footer{ text-align:center; color:#405069; font-size:13px; }
+
+  @media (prefers-reduced-motion: reduce){ .btn{ transition: none } }
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand" aria-label="Belastingdienst – Zuidpark">
+      <span>🏔️ Belastingdienst – Zuidpark</span>
+      <span class="chip" aria-label="Demo omgeving">DEMO</span>
+    </div>
+    <nav aria-label="Hoofdnavigatie">
+      <a class="btn outline" href="./dashboards.html">Dashboards</a>
+      <a class="btn outline" href="./vacatures.html">Vacatures</a>
+      <a id="navLogin" class="btn" href="./login.html">Inloggen</a>
+      <button id="navLogout" class="btn outline" type="button" hidden>Uitloggen</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section id="demoBanner" class="banner" role="note" aria-label="Demowaarschuwing" hidden>
+      <div aria-hidden="true">ℹ️</div>
+      <div>
+        <strong>Demo-omgeving.</strong> Je bent niet echt ingelogd; authenticatie gebeurt client-side. Gebruik deze pagina alleen voor demonstratie.
+      </div>
+    </section>
+
+    <section class="grid" style="margin-top:16px">
+      <div class="card">
+        <h2>Snelle acties</h2>
+        <p class="muted">Bekijk je (voorlopige) aanslag vennootschapsbelasting en geef aan of je het ermee eens bent.</p>
+        <div class="row">
+          <button type="button" class="btn" id="btnShowAssessment">Bekijk aanslag</button>
+        </div>
+
+        <div id="assessmentCard" class="assessment" hidden>
+          <h3>(Voorlopige) aanslag Vpb – 2025</h3>
+          <div class="kv" aria-describedby="assistance">
+            <div>Belastingplichtige</div><div id="assName">—</div>
+            <div>KvK-nummer</div><div id="assKvK">—</div>
+            <div>Boekjaar</div><div>2025</div>
+            <div>Belastbare winst</div><div id="assBase">€ 76.000</div>
+            <div>Tarief</div><div id="assRate">19%</div>
+            <div>Te betalen Vpb</div><div id="assDue">€ 14.440</div>
+          </div>
+
+          <div class="row" style="margin-top:12px">
+            <button type="button" class="btn" id="btnAgree">Mee eens</button>
+            <button type="button" class="btn outline" id="btnDisagree">Niet mee eens</button>
+          </div>
+
+          <div id="assStatus" class="status" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Overzicht</h2>
+        <p class="muted">Snelle samenvatting van je sessie.</p>
+        <div class="kv">
+          <div>Gebruiker</div><div id="who">—</div>
+          <div>Status</div><div id="authState">Niet ingelogd</div>
+          <div>Laatst bekeken</div><div id="lastAction">—</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © 2025 Belastingdienst Zuidpark – Demo omgeving
+  </footer>
+
+  <script>
+    (function(){
+      "use strict";
+      const $ = (s)=>document.querySelector(s);
+      const who = $("#who");
+      const authState = $("#authState");
+      const lastAction = $("#lastAction");
+      const loginBtn = $("#navLogin");
+      const logoutBtn = $("#navLogout");
+      const banner = $("#demoBanner");
+
+      const btnShow = $("#btnShowAssessment");
+      const card = $("#assessmentCard");
+      const assName = $("#assName");
+      const assKvK = $("#assKvK");
+      const assRate = $("#assRate");
+      const assBase = $("#assBase");
+      const assDue = $("#assDue");
+      const assStatus = $("#assStatus");
+
+      function getUser(){ try { return localStorage.getItem('zpUser') || ""; } catch(_) { return ""; } }
+      function setLastAction(text){ try { localStorage.setItem('zpLastAction', text); } catch(_){} lastAction.textContent = text; }
+
+      function refreshAuth(){
+        const u = getUser();
+        const loggedIn = !!u;
+        if (who) who.textContent = loggedIn ? u : '—';
+        if (authState) authState.textContent = loggedIn ? 'Ingelogd' : 'Niet ingelogd';
+        if (loginBtn)  loginBtn.hidden  = loggedIn;
+        if (logoutBtn) logoutBtn.hidden = !loggedIn;
+        if (banner) banner.hidden = !loggedIn ? false : true; // toon banner als het puur demo is en geen echte login
+      }
+
+      function requireAuth(){
+        const u = getUser();
+        if(!u){
+          // Vervang alert door nette redirect en bannerhint
+          setLastAction('Naar login doorgestuurd voor authenticatie');
+          window.location.replace('./login.html');
+        }
+      }
+
+      function setStatus(msg, ok){
+        assStatus.textContent = msg || "";
+        assStatus.className = "status " + (ok ? "ok" : "bad");
+        // focus status voor toegankelijkheid
+        requestAnimationFrame(()=>{ assStatus.tabIndex = -1; assStatus.focus({preventScroll:true}); assStatus.scrollIntoView({behavior:"smooth", block:"nearest"}); });
+      }
+
+      logoutBtn?.addEventListener('click', ()=>{
+        try { localStorage.removeItem('zpUser'); } catch(_) {}
+        if (assStatus){ assStatus.textContent = ""; assStatus.className = "status"; }
+        if (card) card.hidden = true;
+        setLastAction('Uitgelogd');
+        refreshAuth();
+        window.location.href = './login.html';
+      });
+
+      btnShow?.addEventListener('click', ()=>{
+        const u = getUser();
+        if (!u) { requireAuth(); return; }
+        // Vul demo data
+        assName.textContent = u;
+        assKvK.textContent  = "12345678";
+        assRate.textContent = "19%";
+        assBase.textContent = "€ 76.000";
+        assDue.textContent  = "€ 14.440";
+        card.hidden = false;
+        setLastAction('Aanslag 2025 geopend');
+
+        const prev = localStorage.getItem('zpAssessment_2025');
+        if (prev === 'accepted'){
+          setStatus('Bedankt! Je aanslag is bevestigd en gemarkeerd als betaald (demo).', true);
+        } else if (prev === 'disputed'){
+          setStatus('Je gaf eerder aan het niet eens te zijn met de aanslag.', false);
+        } else {
+          assStatus.textContent = "";
+          assStatus.className = "status";
+        }
+      });
+
+      document.getElementById('btnAgree')?.addEventListener('click', ()=>{
+        localStorage.setItem('zpAssessment_2025','accepted');
+        setStatus('Bedankt! Je aanslag is bevestigd en gemarkeerd als betaald (demo).', true);
+        setLastAction('Aanslag 2025 bevestigd');
+      });
+
+      document.getElementById('btnDisagree')?.addEventListener('click', ()=>{
+        localStorage.setItem('zpAssessment_2025','disputed');
+        setLastAction('Aanslag 2025 betwist');
+        window.location.href = './return.html';
+      });
+
+      document.addEventListener('visibilitychange', refreshAuth);
+      window.addEventListener('storage', refreshAuth);
+
+      // Vereis login voor deze pagina
+      refreshAuth();
+      requireAuth();
+
+      // Vul overzicht met bestaande lastAction uit storage
+      try{ lastAction.textContent = localStorage.getItem('zpLastAction') || '—'; }catch(_){}
+    })();
+  </script>
+</body>
+</html>
